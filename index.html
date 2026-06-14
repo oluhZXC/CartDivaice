@@ -1,31 +1,31 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Дія.Девайси</title>
+    <title>Дія.Девайсы</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
         /* M3 Expressive Dynamic Color Palette */
         :root {
-            --md-sys-color-background: #f3f0f8;
-            --md-sys-color-surface: #fef7ff;
+            --md-sys-color-surface: rgba(255, 255, 255, 0.85);
             --md-sys-color-surface-variant: #e7e0ec;
-            --md-sys-color-primary: #6750a4;
+            --md-sys-color-primary: #005bc1;
             --md-sys-color-on-primary: #ffffff;
-            --md-sys-color-primary-container: #eaddff;
-            --md-sys-color-on-primary-container: #21005d;
+            --md-sys-color-primary-container: #d8e2ff;
+            --md-sys-color-on-primary-container: #001a41;
             --md-sys-color-on-surface: #1d1b20;
             --md-sys-color-on-surface-variant: #49454f;
             --md-sys-color-outline: #79747e;
-            --md-sys-color-outline-variant: #c7c4cd;
             --md-sys-color-error: #b3261e;
             --md-shape-corner-extra-large: 28px;
             --md-shape-corner-full: 9999px;
-            --md-elevation-2: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+            --md-elevation-2: 0px 4px 12px rgba(0, 0, 0, 0.1), 0px 2px 6px rgba(0, 0, 0, 0.05);
         }
 
         * {
@@ -37,17 +37,53 @@
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(180deg, #e3dcff 0%, var(--md-sys-color-background) 100%);
             color: var(--md-sys-color-on-surface);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             overflow: hidden;
-            padding-bottom: 80px; /* Отступ под нижний бар */
+            padding-bottom: 80px; 
+            position: relative;
         }
 
-        /* Контейнеры экранов */
+        /* --- ЖИВОЙ ФОН С ПЕРЕЛИВАМИ (КАК В ДІЇ) --- */
+        .diia-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: linear-gradient(125deg, #dae5ff 0%, #eef2fa 40%, #e4dbff 70%, #f6f0ff 100%);
+            background-size: 300% 300%;
+            animation: gradientMove 12s ease infinite alternate;
+        }
+
+        .diia-blur-blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: blobFloat 18s infinite alternate ease-in-out;
+        }
+
+        .blob-1 { background: radial-gradient(circle, #baccff 0%, transparent 70%); top: -100px; left: -100px; }
+        .blob-2 { background: radial-gradient(circle, #dfd0ff 0%, transparent 70%); bottom: 100px; right: -100px; animation-duration: 14s; }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        @keyframes blobFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(80px, 50px) scale(1.15); }
+        }
+
         .screen {
             display: none;
             width: 100%;
@@ -78,354 +114,237 @@
             scroll-snap-type: x mandatory;
             scroll-behavior: smooth;
             scrollbar-width: none;
-            padding: 0 40px;
+            padding: 0 32px;
         }
 
         .swiper-container::-webkit-scrollbar { display: none; }
 
-        .device-card {
-            min-width: calc(100% - 20px);
-            max-width: calc(100% - 20px);
-            height: 520px;
-            background: var(--md-sys-color-surface);
-            border-radius: var(--md-shape-corner-extra-large);
-            margin: 0 10px;
+        .card-perspective {
+            min-width: calc(100% - 16px);
+            max-width: calc(100% - 16px);
+            height: 540px;
+            margin: 0 8px;
             scroll-snap-align: center;
+            perspective: 1500px;
+        }
+
+        .card-flipper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-perspective.flipped .card-flipper {
+            transform: rotateY(180deg);
+        }
+
+        .device-card-front, .device-card-back {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            backface-visibility: hidden;
+            background: var(--md-sys-color-surface);
+            backdrop-filter: blur(20px);
+            border-radius: var(--md-shape-corner-extra-large);
             box-shadow: var(--md-elevation-2);
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.6);
             display: flex;
             flex-direction: column;
             padding: 24px;
-            position: relative;
+        }
+
+        .device-card-back {
+            transform: rotateY(180deg);
+            background: rgba(255, 255, 255, 0.92);
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
         }
 
         .card-header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            padding-bottom: 12px;
+            width: 100%;
+        }
+
+        /* Контейнер для выравнивания мини-логотипа и заголовка */
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Стиль мини-логотипа компании на карточке */
+        .card-company-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .card-company-logo-placeholder {
+            font-size: 24px;
+            color: var(--md-sys-color-primary);
         }
 
         .card-header {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.5px;
+            color: #0d1c33;
         }
 
+        .btn-flip-trigger {
+            background: rgba(0, 8b, 193, 0.08);
+            border: none;
+            color: var(--md-sys-color-primary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .btn-flip-trigger:hover { background: rgba(0, 8b, 193, 0.15); }
+
         .card-body {
-            display: grid;
-            grid-template-columns: 130px 1fr;
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
             flex-grow: 1;
+            width: 100%;
+        }
+
+        .card-main-row {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 16px;
         }
 
         .device-photo-wrapper {
-            width: 130px;
-            height: 170px;
-            background-color: var(--md-sys-color-surface-variant);
+            width: 110px;
+            height: 140px;
+            background-color: rgba(0, 0, 0, 0.04);
             border-radius: 16px;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--md-sys-color-outline);
+            border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
-        .device-photo-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .device-photo-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .device-photo-placeholder { font-size: 36px; color: var(--md-sys-color-on-surface-variant); }
 
-        .device-photo-placeholder {
-            font-size: 40px;
-            color: var(--md-sys-color-on-surface-variant);
-        }
-
-        .device-info {
-            display: flex;
-            flex-direction: column;
+        .card-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 14px;
+            background: rgba(0, 0, 0, 0.02);
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
         }
 
         .info-block { display: flex; flex-direction: column; }
-        .info-label {
-            font-size: 11px;
-            color: var(--md-sys-color-on-surface-variant);
-            margin-bottom: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .info-value {
-            font-size: 16px;
-            font-weight: 500;
-            word-break: break-all;
-        }
+        .info-block.full-width { grid-column: span 2; }
+
+        .info-label { font-size: 11px; color: #6c757d; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.3px; font-weight: 700; }
+        .info-value { font-size: 15px; font-weight: 500; color: #111; word-break: break-all; }
 
         .card-footer-status {
-            background-color: #cce7d2;
-            color: #00531b;
-            padding: 10px 16px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: auto;
+            background-color: #d1ebd6; color: #14532d; padding: 10px 14px; border-radius: 12px;
+            font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-top: auto; width: 100%;
         }
 
-        .page-indicator {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-            height: 8px;
-        }
+        .card-footer-status.inactive { background-color: #e2e8f0; color: #475569; }
 
-        .dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--md-sys-color-outline);
-            opacity: 0.4;
-            border-radius: var(--md-shape-corner-full);
-            transition: all 0.3s ease;
+        .qr-wrapper {
+            background: #ffffff; padding: 16px; border-radius: 20px;
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.05); display: flex;
+            align-items: center; justify-content: center; border: 1px solid rgba(0,0,0,0.05);
         }
+        .qr-placeholder-text { font-size: 14px; color: var(--md-sys-color-on-surface-variant); text-align: center; max-width: 200px; }
 
-        .dot.active {
-            opacity: 1;
-            width: 18px;
-            background-color: var(--md-sys-color-primary);
-        }
+        .page-indicator { display: flex; gap: 8px; margin-top: 12px; height: 8px; }
+        .dot { width: 8px; height: 8px; background-color: var(--md-sys-color-outline); opacity: 0.3; border-radius: var(--md-shape-corner-full); transition: all 0.3s ease; }
+        .dot.active { opacity: 1; width: 20px; background-color: var(--md-sys-color-primary); }
 
-        /* --- ЭКРАН НАСТРОЕК --- */
-        .settings-container {
-            width: 100%;
-            max-width: 450px;
-            height: 100%;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
+        /* --- НАСТРОЙКИ --- */
+        .settings-container { width: 100%; max-width: 450px; height: 100%; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+        .settings-title { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+        .settings-card { background: var(--md-sys-color-surface); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; box-shadow: 0px 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(255, 255, 255, 0.6); }
+        .settings-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--md-sys-color-primary); display: flex; align-items: center; gap: 8px; }
 
-        .settings-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            padding-left: 4px;
-        }
+        .lang-selector { display: flex; background: var(--md-sys-color-surface-variant); padding: 4px; border-radius: 12px; gap: 4px; }
+        .lang-btn { flex: 1; padding: 10px; border: none; background: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--md-sys-color-on-surface-variant); transition: all 0.2s; }
+        .lang-btn.active { background: #fff; color: var(--md-sys-color-primary); box-shadow: 0px 2px 4px rgba(0,0,0,0.08); font-weight: 700; }
 
-        .settings-card {
-            background: var(--md-sys-color-surface);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0px 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid rgba(255,255,255,0.5);
-        }
-
-        .settings-card h4 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: var(--md-sys-color-primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Пункт "Про застосунок" */
-        .app-info-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .app-info-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 15px;
-            border-bottom: 1px solid var(--md-sys-color-surface-variant);
-            padding-bottom: 8px;
-        }
+        .app-info-list { display: flex; flex-direction: column; gap: 10px; }
+        .app-info-item { display: flex; justify-content: space-between; font-size: 14px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 6px; }
         .app-info-item:last-child { border: none; padding: 0; }
-        .app-info-item .value { font-weight: 500; color: var(--md-sys-color-on-surface-variant); }
+        .app-info-item .value { font-weight: 500; color: #333; }
 
-        /* Пункт "Положення карток" */
-        .position-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .position-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--md-sys-color-surface-variant);
-            padding: 12px 16px;
-            border-radius: 12px;
-        }
-        .position-item-title {
-            font-weight: 500;
-            font-size: 15px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 180px;
-        }
-        .position-actions {
-            display: flex;
-            gap: 2px;
-        }
-        .btn-action {
-            background: none;
-            border: none;
-            color: var(--md-sys-color-on-surface-variant);
-            cursor: pointer;
-            width: 32px;
-            height: 32px;
-            border-radius: var(--md-shape-corner-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .position-list { display: flex; flex-direction: column; gap: 8px; }
+        .position-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.7); padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.04); }
+        .position-item-title { font-weight: 600; font-size: 14px; max-width: 50%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .position-actions { display: flex; gap: 4px; }
+        
+        .btn-action { background: none; border: none; color: var(--md-sys-color-on-surface-variant); cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .btn-action:hover { background-color: rgba(0,0,0,0.05); }
+        .btn-action.edit:hover { color: var(--md-sys-color-primary); }
         .btn-action.delete:hover { color: var(--md-sys-color-error); }
 
-        /* --- НИЖНЯЯ ПАНЕЛЬ НАВИГАЦИИ (M3) --- */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 80px;
-            background-color: #f7f2fa;
-            box-shadow: 0px -1px 3px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 90;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            color: var(--md-sys-color-on-surface-variant);
-            font-size: 12px;
-            font-weight: 500;
-            width: 100%;
-            height: 100%;
-            justify-content: center;
-        }
-
-        .nav-icon-wrapper {
-            width: 64px;
-            height: 32px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s ease;
-        }
-
-        .nav-item.active .nav-icon-wrapper {
-            background-color: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-        }
-
-        .nav-item.active {
-            color: var(--md-sys-color-on-surface);
-            font-weight: 700;
-        }
+        /* --- BOTTOM NAVIGATION BAR --- */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 80px; background-color: rgba(247, 242, 250, 0.9); backdrop-filter: blur(20px); box-shadow: 0px -2px 10px rgba(0,0,0,0.03); display: flex; justify-content: space-around; align-items: center; z-index: 90; border-top: 1px solid rgba(0,0,0,0.05); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: var(--md-sys-color-on-surface-variant); font-size: 12px; font-weight: 500; width: 100%; height: 100%; justify-content: center; }
+        .nav-icon-wrapper { width: 64px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
+        .nav-item.active .nav-icon-wrapper { background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+        .nav-item.active { color: var(--md-sys-color-on-surface); font-weight: 700; }
 
         /* FLOATING ACTION BUTTON (+) */
-        .fab-add {
-            position: fixed;
-            bottom: 100px; /* Поднят выше, чтобы не перекрывать навибар */
-            right: 24px;
-            width: 56px;
-            height: 56px;
-            background-color: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-            border: none;
-            border-radius: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--md-elevation-2);
-            transition: all 0.2s ease;
-            z-index: 80;
-        }
-
+        .fab-add { position: fixed; bottom: 96px; right: 20px; width: 56px; height: 56px; background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); border: none; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: var(--md-elevation-2); z-index: 80; transition: transform 0.2s; }
         .fab-add:hover { transform: scale(1.05); }
 
-        /* МОДАЛЬНОЕ ОКНО */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            z-index: 100;
-        }
-
+        /* MODAL WINDOW */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 100; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-
-        .modal-content {
-            width: 100%;
-            max-width: 500px;
-            background-color: var(--md-sys-color-surface);
-            border-top-left-radius: var(--md-shape-corner-extra-large);
-            border-top-right-radius: var(--md-shape-corner-extra-large);
-            padding: 32px 24px;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1);
-        }
-
+        .modal-content { width: 100%; max-width: 500px; background-color: #fff; border-top-left-radius: var(--md-shape-corner-extra-large); border-top-right-radius: var(--md-shape-corner-extra-large); padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1); max-height: 85vh; overflow-y: auto; }
         .modal-overlay.active .modal-content { transform: translateY(0); }
-        .modal-title { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
-        .input-group { position: relative; margin-bottom: 16px; }
-        .input-field {
-            width: 100%;
-            padding: 16px;
-            background-color: var(--md-sys-color-surface-variant);
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            color: var(--md-sys-color-on-surface);
-            outline: none;
-        }
-        .file-input-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px;
-            background-color: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 500;
-            margin-bottom: 16px;
-            justify-content: center;
-        }
-        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
-        .btn { padding: 12px 24px; border-radius: var(--md-shape-corner-full); font-size: 14px; font-weight: 500; border: none; cursor: pointer; }
+        .modal-title { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+        .input-group { position: relative; margin-bottom: 12px; }
+        .input-field { width: 100%; padding: 14px; background-color: #f1f3f9; border: none; border-radius: 12px; font-size: 15px; outline: none; }
+        
+        /* Кнопки загрузки файлов */
+        .file-inputs-container { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 14px; }
+        .file-input-label { display: flex; align-items: center; gap: 12px; padding: 14px; background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); border-radius: 12px; cursor: pointer; font-weight: 500; justify-content: center; font-size: 14px; }
+
+        .checkbox-container { display: flex; align-items: center; gap: 12px; padding: 12px 4px; cursor: pointer; user-select: none; font-size: 15px; font-weight: 500; }
+        .checkbox-container input { display: none; }
+        .custom-checkbox { width: 20px; height: 20px; border: 2px solid var(--md-sys-color-outline); border-radius: 6px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: transparent; }
+        .checkbox-container input:checked + .custom-checkbox { background-color: var(--md-sys-color-primary); border-color: var(--md-sys-color-primary); color: #fff; }
+        .custom-checkbox span { font-size: 16px; font-weight: bold; }
+
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px; }
+        .btn { padding: 12px 20px; border-radius: var(--md-shape-corner-full); font-size: 14px; font-weight: 500; border: none; cursor: pointer; }
         .btn-text { background: none; color: var(--md-sys-color-primary); }
         .btn-filled { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
         .empty-state { text-align: center; color: var(--md-sys-color-on-surface-variant); padding: 40px; width: 100%; }
     </style>
 </head>
 <body>
+
+    <div class="diia-bg"></div>
+    <div class="diia-blur-blob blob-1"></div>
+    <div class="diia-blur-blob blob-2"></div>
 
     <div id="screenHome" class="screen active">
         <div class="swiper-container" id="swiperContainer"></div>
@@ -434,88 +353,129 @@
 
     <div id="screenSettings" class="screen">
         <div class="settings-container">
-            <h2 class="settings-title">Налаштування</h2>
+            <h2 class="settings-title" id="txtSettingsTitle">Настройки</h2>
             
             <div class="settings-card">
-                <h4><span class="material-symbols-rounded">info</span> Про застосунок</h4>
-                <div class="app-info-list">
-                    <div class="app-info-item">
-                        <span>Назва</span>
-                        <span class="value">Дія.Девайси</span>
-                    </div>
-                    <div class="app-info-item">
-                        <span>Версія</span>
-                        <span class="value">3.4.12-expressive</span>
-                    </div>
-                    <div class="app-info-item">
-                        <span>Збірка</span>
-                        <span class="value">2026.06.14</span>
-                    </div>
-                    <div class="app-info-item">
-                        <span>Шифрування даних</span>
-                        <span class="value" style="color: #00531b;">Увімкнено (AES-256)</span>
-                    </div>
+                <h4 id="txtLangHeader"><span class="material-symbols-rounded">language</span> Язык приложения / Мова</h4>
+                <div class="lang-selector">
+                    <button class="lang-btn active" id="btnLangRu" onclick="changeLanguage('ru')">Русский</button>
+                    <button class="lang-btn" id="btnLangUk" onclick="changeLanguage('uk')">Українська</button>
                 </div>
             </div>
 
             <div class="settings-card">
-                <h4><span class="material-symbols-rounded">low_priority</span> Положення карток</h4>
-                <div class="position-list" id="positionList">
-                    </div>
+                <h4 id="txtAboutHeader"><span class="material-symbols-rounded">info</span> О приложении</h4>
+                <div class="app-info-list">
+                    <div class="app-info-item"><span id="txtAppName">Название</span><span class="value">Дія.Девайсы</span></div>
+                    <div class="app-info-item"><span id="txtAppVer">Версия</span><span class="value">5.1.0-expressive</span></div>
+                    <div class="app-info-item"><span id="txtAppEnc">Шифрование</span><span class="value" style="color: #14532d;" id="txtEncVal">Включено (AES-256)</span></div>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <h4 id="txtOrderHeader"><span class="material-symbols-rounded">low_priority</span> Положение карточек</h4>
+                <div class="position-list" id="positionList"></div>
             </div>
         </div>
     </div>
 
-    <button class="fab-add" id="openModalBtn" aria-label="Додати пристрій">
+    <button class="fab-add" id="openModalBtn" aria-label="Добавить">
         <span class="material-symbols-rounded">add</span>
     </button>
 
     <nav class="nav-bar">
         <div class="nav-item active" onclick="switchScreen('home', this)">
-            <div class="nav-icon-wrapper">
-                <span class="material-symbols-rounded">style</span>
-            </div>
-            <span>Головна</span>
+            <div class="nav-icon-wrapper"><span class="material-symbols-rounded">style</span></div>
+            <span id="navHome">Главная</span>
         </div>
         <div class="nav-item" onclick="switchScreen('settings', this)">
-            <div class="nav-icon-wrapper">
-                <span class="material-symbols-rounded">settings</span>
-            </div>
-            <span>Налаштування</span>
+            <div class="nav-icon-wrapper"><span class="material-symbols-rounded">settings</span></div>
+            <span id="navSettings">Настройки</span>
         </div>
     </nav>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-content">
-            <h3 class="modal-title">Додати пристрій</h3>
+            <h3 class="modal-title" id="txtModalTitle">Добавить устройство</h3>
             <form id="deviceForm">
-                <label class="file-input-label">
-                    <span class="material-symbols-rounded">upload_file</span>
-                    <span id="fileLabelText">Завантажити фото пристрою</span>
-                    <input type="file" id="devicePhoto" accept="image/*" style="display: none;" required>
+                <div class="file-inputs-container">
+                    <label class="file-input-label">
+                        <span class="material-symbols-rounded">image</span>
+                        <span id="fileLabelText">Загрузить фото устройства</span>
+                        <input type="file" id="devicePhoto" accept="image/*" style="display: none;">
+                    </label>
+                    <label class="file-input-label" style="background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant);">
+                        <span class="material-symbols-rounded">token</span>
+                        <span id="logoLabelText">Загрузить мини-логотип компании</span>
+                        <input type="file" id="companyLogo" accept="image/*" style="display: none;">
+                    </label>
+                </div>
+                
+                <div class="input-group"><input type="text" id="devVendor" class="input-field" placeholder="Производитель" required></div>
+                <div class="input-group"><input type="text" id="devModel" class="input-field" placeholder="Модель" required></div>
+                <div class="input-group"><input type="text" id="deviceSerial" class="input-field" placeholder="Серийный номер" required></div>
+                <div class="input-group"><input type="text" id="devPurchase" class="input-field" placeholder="Дата покупки" required></div>
+                <div class="input-group"><input type="text" id="deviceWarranty" class="input-field" placeholder="Срок гарантии" required></div>
+                <div class="input-group"><input type="url" id="devUrl" class="input-field" placeholder="Ссылка на магазин (необязательно)"></div>
+                
+                <label class="checkbox-container">
+                    <input type="checkbox" id="devInactive">
+                    <div class="custom-checkbox"><span class="material-symbols-rounded">done</span></div>
+                    <span id="txtCheckboxLabel">Временно не активен</span>
                 </label>
-                <div class="input-group">
-                    <input type="text" id="deviceName" class="input-field" placeholder="Назва пристрою" required>
-                </div>
-                <div class="input-group">
-                    <input type="text" id="deviceSerial" class="input-field" placeholder="Серійний номер" required>
-                </div>
-                <div class="input-group">
-                    <input type="text" id="deviceWarranty" class="input-field" placeholder="Термін гарантії" required>
-                </div>
+
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-text" id="closeModalBtn">Скасувати</button>
-                    <button type="submit" class="btn btn-filled">Додати</button>
+                    <button type="button" class="btn btn-text" id="closeModalBtn">Отмена</button>
+                    <button type="submit" class="btn btn-filled" id="btnSubmitForm">Добавить</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Загрузка данных
+        const i18n = {
+            ru: {
+                settingsTitle: "Настройки", langHeader: "Язык приложения / Мова", aboutHeader: "О приложении",
+                appName: "Название", appVer: "Версия", appEnc: "Шифрование", encVal: "Включено (AES-256)",
+                orderHeader: "Положение карточек", navHome: "Главная", navSettings: "Настройки",
+                modalTitleAdd: "Добавить устройство", modalTitleEdit: "Редактировать устройство",
+                fileLabel: "Загрузить фото устройства", fileLabelKeep: "Фото загружено (нажмите для замены)",
+                logoLabel: "Загрузить мини-логотип компании", logoLabelKeep: "Логотип загружен (нажмите для замены)",
+                phVendor: "Производитель (напр. Apple)", phModel: "Модель (напр. iPhone 15)",
+                phSerial: "Серийный номер", phPurchase: "Дата покупки (напр. 12.01.2025)",
+                phWarranty: "Срок гарантии (напр. до 12.01.2027)", phUrl: "Ссылка на страницу в магазине",
+                btnCancel: "Отмена", btnAdd: "Добавить", btnSave: "Сохранить",
+                cardTitle: "Паспорт устройства", infoVendor: "Производитель", infoModel: "Модель",
+                infoSerial: "Серийный номер", infoPurchase: "Дата покупки", infoWarranty: "Гарантия",
+                statusText: "Документ обновлен • Действителен", statusInactiveText: "Временно не активен",
+                emptyState: "Нет добавленных устройств", confirmDel: "Вы уверены, что хотите удалить",
+                chkLabel: "Временно не активен", noQrText: "Ссылка на магазин не была указана при добавлении."
+            },
+            uk: {
+                settingsTitle: "Налаштування", langHeader: "Язык приложения / Мова", aboutHeader: "Про застосунок",
+                appName: "Назва", appVer: "Версія", appEnc: "Шифрування", encVal: "Увімкнено (AES-256)",
+                orderHeader: "Положення карток", navHome: "Головна", navSettings: "Налаштування",
+                modalTitleAdd: "Додати пристрій", modalTitleEdit: "Редагувати пристрій",
+                fileLabel: "Завантажити фото пристрою", fileLabelKeep: "Фото завантажено (натисніть для заміни)",
+                logoLabel: "Завантажити міні-логотип компанії", logoLabelKeep: "Логотип завантажено (натисніть для заміни)",
+                phVendor: "Виробник (напр. Apple)", phModel: "Модель (напр. iPhone 15)",
+                phSerial: "Серійний номер", phPurchase: "Дата купівлі (напр. 12.01.2025)",
+                phWarranty: "Термін гарантії (напр. до 12.01.2027)", phUrl: "Посилання на сторінку в магазині",
+                btnCancel: "Скасувати", btnAdd: "Додати", btnSave: "Зберегти",
+                cardTitle: "Паспорт пристрою", infoVendor: "Виробник", infoModel: "Модель",
+                infoSerial: "Серійний номер", infoPurchase: "Дата купівлі", infoWarranty: "Гарантія",
+                statusText: "Документ оновлено • Дійсний", statusInactiveText: "Тимчасово не активний",
+                emptyState: "Немає доданих пристроїв", confirmDel: "Ви впевнені, що хочете видалити",
+                chkLabel: "Тимчасово не активний", noQrText: "Посилання на магазин не було вказано при додаванні."
+            }
+        };
+
+        let currentLang = localStorage.getItem('dia_lang') || 'ru';
         let devices = JSON.parse(localStorage.getItem('dia_devices')) || [
-            { name: "MacBook Pro M3", serial: "C02FX54QMD6M", warranty: "до 24.11.2026", photo: "" }
+            { vendor: "Google", model: "Pixel 8", serial: "34567890", purchase: "20.05.2025", warranty: "Закончен", url: "https://google.com", photo: "", compLogo: "", isInactive: false }
         ];
+        
+        let editIndex = null;
 
         const swiperContainer = document.getElementById('swiperContainer');
         const pageIndicator = document.getElementById('pageIndicator');
@@ -525,69 +485,167 @@
         const closeModalBtn = document.getElementById('closeModalBtn');
         const deviceForm = document.getElementById('deviceForm');
         const devicePhotoInput = document.getElementById('devicePhoto');
+        const companyLogoInput = document.getElementById('companyLogo');
         const fileLabelText = document.getElementById('fileLabelText');
+        const logoLabelText = document.getElementById('logoLabelText');
 
-        function saveToLocalStorage() {
-            localStorage.setItem('dia_devices', JSON.stringify(devices));
+        function saveAll() { localStorage.setItem('dia_devices', JSON.stringify(devices)); }
+
+        function applyLocalization() {
+            const lang = i18n[currentLang];
+            document.getElementById('txtSettingsTitle').innerText = lang.settingsTitle;
+            document.getElementById('txtLangHeader').innerHTML = `<span class="material-symbols-rounded">language</span> ` + lang.langHeader;
+            document.getElementById('txtAboutHeader').innerHTML = `<span class="material-symbols-rounded">info</span> ` + lang.aboutHeader;
+            document.getElementById('txtAppName').innerText = "Дія.Девайсы";
+            document.getElementById('txtAppVer').innerText = lang.appVer;
+            document.getElementById('txtAppEnc').innerText = lang.appEnc;
+            document.getElementById('txtEncVal').innerText = lang.encVal;
+            document.getElementById('txtOrderHeader').innerHTML = `<span class="material-symbols-rounded">low_priority</span> ` + lang.orderHeader;
+            document.getElementById('navHome').innerText = lang.navHome;
+            document.getElementById('navSettings').innerText = lang.navSettings;
+            
+            if (editIndex === null) {
+                document.getElementById('txtModalTitle').innerText = lang.modalTitleAdd;
+                document.getElementById('btnSubmitForm').innerText = lang.btnAdd;
+                if(devicePhotoInput.files.length === 0) fileLabelText.innerText = lang.fileLabel;
+                if(companyLogoInput.files.length === 0) logoLabelText.innerText = lang.logoLabel;
+            } else {
+                document.getElementById('txtModalTitle').innerText = lang.modalTitleEdit;
+                document.getElementById('btnSubmitForm').innerText = lang.btnSave;
+                if(devicePhotoInput.files.length === 0) fileLabelText.innerText = lang.fileLabelKeep;
+                if(companyLogoInput.files.length === 0) logoLabelText.innerText = lang.logoLabelKeep;
+            }
+            
+            document.getElementById('devVendor').placeholder = lang.phVendor;
+            document.getElementById('devModel').placeholder = lang.phModel;
+            document.getElementById('deviceSerial').placeholder = lang.phSerial;
+            document.getElementById('devPurchase').placeholder = lang.phPurchase;
+            document.getElementById('deviceWarranty').placeholder = lang.phWarranty;
+            document.getElementById('devUrl').placeholder = lang.phUrl;
+            document.getElementById('closeModalBtn').innerText = lang.btnCancel;
+            document.getElementById('txtCheckboxLabel').innerText = lang.chkLabel;
+
+            document.getElementById('btnLangRu').classList.toggle('active', currentLang === 'ru');
+            document.getElementById('btnLangUk').classList.toggle('active', currentLang === 'uk');
         }
 
-        // Переключение экранов
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('dia_lang', lang);
+            applyLocalization();
+            if(document.getElementById('screenHome').classList.contains('active')) renderHomeDevices();
+            else renderSettingsManager();
+        }
+
         function switchScreen(screenName, element) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            
             element.classList.add('active');
+            resetAllFlips();
 
             if (screenName === 'home') {
                 document.getElementById('screenHome').classList.add('active');
                 openModalBtn.style.display = 'flex';
                 renderHomeDevices();
-            } else if (screenName === 'settings') {
+            } else {
                 document.getElementById('screenSettings').classList.add('active');
                 openModalBtn.style.display = 'none';
                 renderSettingsManager();
             }
         }
 
-        // Рендеринг главного экрана
         function renderHomeDevices(targetIndex = null) {
             swiperContainer.innerHTML = '';
             pageIndicator.innerHTML = '';
+            const lang = i18n[currentLang];
 
             if (devices.length === 0) {
-                swiperContainer.innerHTML = `
-                    <div class="empty-state">
-                        <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom:12px;">no_devices</span>
-                        <h3>Немає доданих пристроїв</h3>
-                    </div>`;
+                swiperContainer.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded" style="font-size: 48px; margin-bottom:12px;">no_devices</span> h3>${lang.emptyState}</h3></div>`;
                 return;
             }
 
             devices.forEach((device, index) => {
-                const card = document.createElement('div');
-                card.className = 'device-card';
+                const perspectiveContainer = document.createElement('div');
+                perspectiveContainer.className = 'card-perspective';
+                perspectiveContainer.id = `card-perf-${index}`;
+
                 const photoHtml = device.photo 
-                    ? `<img src="${device.photo}" alt="${device.name}">`
+                    ? `<img src="${device.photo}" alt="">`
                     : `<span class="material-symbols-rounded device-photo-placeholder">devices</span>`;
 
-                card.innerHTML = `
-                    <div class="card-header-container">
-                        <div class="card-header">Паспорт пристрою</div>
-                    </div>
-                    <div class="card-body">
-                        <div class="device-photo-wrapper">${photoHtml}</div>
-                        <div class="device-info">
-                            <div class="info-block"><span class="info-label">Назва</span><span class="value info-value">${device.name}</span></div>
-                            <div class="info-block"><span class="info-label">Серійний номер</span><span class="value info-value">${device.serial}</span></div>
-                            <div class="info-block"><span class="info-label">Гарантія</span><span class="value info-value">${device.warranty}</span></div>
+                // Отрендерим иконку логотипа компании, если она есть
+                const logoHtml = device.compLogo 
+                    ? `<img src="${device.compLogo}" class="card-company-logo" alt="">`
+                    : `<span class="material-symbols-rounded card-company-logo-placeholder">shield</span>`;
+
+                const statusClass = device.isInactive ? 'card-footer-status inactive' : 'card-footer-status';
+                const statusIcon = device.isInactive ? 'error_outline' : 'check_circle';
+                const statusText = device.isInactive ? lang.statusInactiveText : lang.statusText;
+
+                perspectiveContainer.innerHTML = `
+                    <div class="card-flipper">
+                        <div class="device-card-front">
+                            <div class="card-header-container">
+                                <div class="card-header-left">
+                                    ${logoHtml}
+                                    <div class="card-header">${lang.cardTitle}</div>
+                                </div>
+                                <button class="btn-flip-trigger" onclick="toggleFlip(${index})" title="Перевернуть">
+                                    <span class="material-symbols-rounded">flip_to_back</span>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-main-row">
+                                    <div class="device-photo-wrapper">${photoHtml}</div>
+                                    <div style="display:flex; flex-direction:column; justify-content:center; gap:8px;">
+                                        <div class="info-block"><span class="info-label">${lang.infoVendor}</span><span class="info-value" style="font-size:18px; font-weight:700;">${device.vendor}</span></div>
+                                        <div class="info-block"><span class="info-label">${lang.infoModel}</span><span class="info-value" style="font-size:15px; color:#333;">${device.model}</span></div>
+                                    </div>
+                                </div>
+                                <div class="card-details-grid">
+                                    <div class="info-block full-width"><span class="info-label">${lang.infoSerial}</span><span class="info-value" style="font-family:monospace; letter-spacing:0.5px;">${device.serial}</span></div>
+                                    <div class="info-block"><span class="info-label">${lang.infoPurchase}</span><span class="info-value">${device.purchase}</span></div>
+                                    <div class="info-block"><span class="info-label">${lang.infoWarranty}</span><span class="info-value">${device.warranty}</span></div>
+                                </div>
+                            </div>
+                            <div class="${statusClass}">
+                                <span class="material-symbols-rounded" style="font-size: 18px;">${statusIcon}</span>
+                                ${statusText}
+                            </div>
+                        </div>
+
+                        <div class="device-card-back">
+                            <div class="card-header-container">
+                                <div class="card-header">${device.vendor} ${device.model}</div>
+                                <button class="btn-flip-trigger" onclick="toggleFlip(${index})" title="Назад">
+                                    <span class="material-symbols-rounded">flip_to_front</span>
+                                </button>
+                            </div>
+                            <div class="qr-wrapper" id="qr-container-${index}"></div>
+                            <div class="${statusClass}">
+                                <span class="material-symbols-rounded" style="font-size: 18px;">qr_code_2</span>
+                                Сканируйте для перехода в магазин
+                            </div>
                         </div>
                     </div>
-                    <div class="card-footer-status">
-                        <span class="material-symbols-rounded" style="font-size: 18px;">check_circle</span>
-                        Документ оновлено • Цифровий запис дійсний
-                    </div>
                 `;
-                swiperContainer.appendChild(card);
+                swiperContainer.appendChild(perspectiveContainer);
+
+                setTimeout(() => {
+                    const qrBox = document.getElementById(`qr-container-${index}`);
+                    if (device.url) {
+                        new QRCode(qrBox, {
+                            text: device.url,
+                            width: 180,
+                            height: 180,
+                            colorDark: "#0d1c33",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    } else {
+                        qrBox.innerHTML = `<div class="qr-placeholder-text"><span class="material-symbols-rounded" style="font-size:40px; opacity:0.4; margin-bottom:8px;">link_off</span><br>${lang.noQrText}</div>`;
+                    }
+                }, 50);
 
                 const dot = document.createElement('div');
                 dot.className = `dot ${index === 0 ? 'active' : ''}`;
@@ -595,37 +653,38 @@
             });
 
             updateActiveDot();
-            if (targetIndex !== null && devices[targetIndex]) {
-                setTimeout(() => {
-                    const cards = document.querySelectorAll('.device-card');
-                    swiperContainer.scrollLeft = cards[targetIndex].offsetLeft - 40;
+            if (targetIndex !== null) {
+                setTimeout(() => { 
+                    const cards = document.querySelectorAll('.card-perspective');
+                    if (cards[targetIndex]) swiperContainer.scrollLeft = cards[targetIndex].offsetLeft - 32; 
                 }, 50);
             }
         }
 
-        // Рендеринг менеджера положения в Настройках
+        window.toggleFlip = function(index) {
+            const card = document.getElementById(`card-perf-${index}`);
+            if (card) card.classList.toggle('flipped');
+        };
+
+        function resetAllFlips() {
+            document.querySelectorAll('.card-perspective').forEach(card => card.classList.remove('flipped'));
+        }
+
         function renderSettingsManager() {
             positionList.innerHTML = '';
-
-            if (devices.length === 0) {
-                positionList.innerHTML = `<p style="font-size: 14px; opacity: 0.6; text-align: center; padding: 12px;">Список пристроїв порожній</p>`;
-                return;
-            }
+            if (devices.length === 0) return;
 
             devices.forEach((device, index) => {
                 const item = document.createElement('div');
                 item.className = 'position-item';
-
-                const upBtn = index > 0 
-                    ? `<button class="btn-action" onclick="moveDevice(${index}, -1)"><span class="material-symbols-rounded">arrow_upward</span></button>` : '';
-                const downBtn = index < devices.length - 1 
-                    ? `<button class="btn-action" onclick="moveDevice(${index}, 1)"><span class="material-symbols-rounded">arrow_downward</span></button>` : '';
+                const upBtn = index > 0 ? `<button class="btn-action" onclick="moveDevice(${index}, -1)"><span class="material-symbols-rounded">arrow_upward</span></button>` : '';
+                const downBtn = index < devices.length - 1 ? `<button class="btn-action" onclick="moveDevice(${index}, 1)"><span class="material-symbols-rounded">arrow_downward</span></button>` : '';
 
                 item.innerHTML = `
-                    <span class="position-item-title">${device.name}</span>
+                    <span class="position-item-title">${device.vendor} ${device.model} ${device.isInactive ? `(${i18n[currentLang].statusInactiveText})` : ''}</span>
                     <div class="position-actions">
-                        ${upBtn}
-                        ${downBtn}
+                        ${upBtn}${downBtn}
+                        <button class="btn-action edit" onclick="openEditModal(${index})"><span class="material-symbols-rounded">edit</span></button>
                         <button class="btn-action delete" onclick="deleteDevice(${index})"><span class="material-symbols-rounded">delete</span></button>
                     </div>
                 `;
@@ -633,75 +692,110 @@
             });
         }
 
-        // Перемещение устройств
         window.moveDevice = function(index, direction) {
-            const newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= devices.length) return;
-
-            const temp = devices[index];
-            devices[index] = devices[newIndex];
-            devices[newIndex] = temp;
-
-            saveToLocalStorage();
-            renderSettingsManager();
+            const next = index + direction;
+            const temp = devices[index]; devices[index] = devices[next]; devices[next] = temp;
+            saveAll(); renderSettingsManager();
         };
 
-        // Удаление устройств
+        window.openEditModal = function(index) {
+            editIndex = index;
+            const device = devices[index];
+            
+            document.getElementById('devVendor').value = device.vendor;
+            document.getElementById('devModel').value = device.model;
+            document.getElementById('deviceSerial').value = device.serial;
+            document.getElementById('devPurchase').value = device.purchase;
+            document.getElementById('deviceWarranty').value = device.warranty;
+            document.getElementById('devUrl').value = device.url || '';
+            document.getElementById('devInactive').checked = device.isInactive;
+            
+            document.getElementById('devicePhoto').required = false;
+            document.getElementById('companyLogo').required = false;
+
+            applyLocalization();
+            modalOverlay.classList.add('active');
+        };
+
         window.deleteDevice = function(index) {
-            if (confirm(`Ви впевнені, що хочете видалити ${devices[index].name}?`)) {
-                devices.splice(index, 1);
-                saveToLocalStorage();
-                renderSettingsManager();
+            if (confirm(`${i18n[currentLang].confirmDel} ${devices[index].vendor} ${devices[index].model}?`)) {
+                devices.splice(index, 1); saveAll(); renderSettingsManager();
             }
         };
 
-        // Обновление точек
         function updateActiveDot() {
             const dots = document.querySelectorAll('.dot');
             if(dots.length === 0) return;
-            const activeIndex = Math.round(swiperContainer.scrollLeft / swiperContainer.offsetWidth);
-            dots.forEach((dot, idx) => {
-                dot.classList.toggle('active', idx === activeIndex);
-            });
+            const idx = Math.round(swiperContainer.scrollLeft / swiperContainer.offsetWidth);
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === idx));
         }
-        swiperContainer.addEventListener('scroll', updateActiveDot);
 
-        // Модалка
-        openModalBtn.addEventListener('click', () => modalOverlay.classList.add('active'));
-        closeModalBtn.addEventListener('click', () => {
-            modalOverlay.classList.remove('active');
+        swiperContainer.addEventListener('scroll', () => {
+            updateActiveDot();
+            resetAllFlips();
+        });
+
+        openModalBtn.addEventListener('click', () => {
+            editIndex = null;
             deviceForm.reset();
-            fileLabelText.innerText = "Завантажити фото пристрою";
+            document.getElementById('devicePhoto').required = true;
+            document.getElementById('companyLogo').required = false; // Логотип всегда необязателен
+            applyLocalization();
+            modalOverlay.classList.add('active');
         });
-        devicePhotoInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) fileLabelText.innerText = e.target.files[0].name;
-        });
+        
+        closeModalBtn.addEventListener('click', () => { modalOverlay.classList.remove('active'); deviceForm.reset(); editIndex = null; applyLocalization(); });
+        
+        devicePhotoInput.addEventListener('change', (e) => { if (e.target.files.length > 0) fileLabelText.innerText = e.target.files[0].name; });
+        companyLogoInput.addEventListener('change', (e) => { if (e.target.files.length > 0) logoLabelText.innerText = e.target.files[0].name; });
 
-        // Создание девайса
+        // Процесс обработки отправки формы (с чтением двух картинок через Promise)
         deviceForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const file = devicePhotoInput.files[0];
-            const reader = new FileReader();
+            
+            const photoFile = devicePhotoInput.files[0];
+            const logoFile = companyLogoInput.files[0];
 
-            reader.onloadend = function () {
-                const newDevice = {
-                    name: document.getElementById('deviceName').value,
+            const readAsDataURL = (file) => {
+                return new Promise((resolve) => {
+                    if (!file) return resolve(null);
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            Promise.all([readAsDataURL(photoFile), readAsDataURL(logoFile)]).then(([photoResult, logoResult]) => {
+                const deviceData = {
+                    vendor: document.getElementById('devVendor').value,
+                    model: document.getElementById('devModel').value,
                     serial: document.getElementById('deviceSerial').value,
+                    purchase: document.getElementById('devPurchase').value,
                     warranty: document.getElementById('deviceWarranty').value,
-                    photo: reader.result
+                    url: document.getElementById('devUrl').value, 
+                    isInactive: document.getElementById('devInactive').checked,
+                    photo: photoResult ? photoResult : (editIndex !== null ? devices[editIndex].photo : ""),
+                    compLogo: logoResult ? logoResult : (editIndex !== null ? devices[editIndex].compLogo : "")
                 };
-                devices.push(newDevice);
-                saveToLocalStorage();
-                renderHomeDevices(devices.length - 1);
-                modalOverlay.classList.remove('active');
-                deviceForm.reset();
-                fileLabelText.innerText = "Завантажити фото пристрою";
-            }
-            if (file) reader.readAsDataURL(file);
-            else reader.onloadend();
+
+                if (editIndex === null) {
+                    devices.push(deviceData);
+                    saveAll();
+                    renderHomeDevices(devices.length - 1);
+                } else {
+                    devices[editIndex] = deviceData;
+                    saveAll();
+                    renderSettingsManager();
+                }
+                
+                modalOverlay.classList.remove('active'); 
+                deviceForm.reset(); 
+                editIndex = null; 
+                applyLocalization();
+            });
         });
 
-        // Старт
+        applyLocalization();
         renderHomeDevices();
     </script>
 </body>
